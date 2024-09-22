@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { fetchData } from '../../../../fetchdata';
 import { Recipe } from '../../../../types';
+import Image from 'next/image'; 
 
 export default function RecipeDetail({ params }: { params: { id: string } }) {
   const [recipe, setRecipe] = useState<Recipe | null>(null);
@@ -16,7 +17,8 @@ export default function RecipeDetail({ params }: { params: { id: string } }) {
       try {
         const data = await fetchData<Recipe>(`https://dummyjson.com/recipes/${params.id}`);
         setRecipe(data);
-      } catch (err) {
+      }catch (err) {
+        console.error('Error loading recipe:', err); 
         setError('Failed to load recipe');
       } finally {
         setLoading(false);
@@ -57,8 +59,15 @@ export default function RecipeDetail({ params }: { params: { id: string } }) {
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg mt-6">
-      <h1 className="text-4xl font-bold mb-4 text-gray-800">{recipe.name}</h1>
-      <img src={recipe.image} alt={recipe.name} className="w-full h-auto rounded-lg mb-6" />
+      <h1 className="text-4xl font-bold mb-4 text-gray-800 text-center">{recipe.name}</h1>
+      
+      <Image 
+        src={recipe.image} 
+        alt={recipe.name} 
+        width={500} 
+        height={300} 
+        className="w-full h-auto rounded-lg mb-6" 
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div>
