@@ -59,10 +59,10 @@ export default function CommentsSection({ blogId }: CommentsSectionProps) {
       <div className="grid gap-2 mb-4">
 
       <textarea    value={newComment}
-          onChange={(e) => setNewComment(e.target.value)}  placeholder="write your comment"  className=" h-24 p-2 w-full border border-gray-400  rounded-md">
+          onChange={(e) => setNewComment(e.target.value)}  placeholder="write your comment"  className="  h-24 p-2 w-full border border-gray-400  rounded-md">
 
             </textarea>
-            <button   onClick={addComment} className="bg-[#FE4A51] text-white p-2 w-full sm:w-[200px]  rounded-md mt-2">Add Comment</button>
+            <button   onClick={addComment} className="bg-[#FE4A51]   text-white p-2 w-full sm:w-[200px]  rounded-md mt-2">Add Comment</button>
 
       </div>
       <ul>

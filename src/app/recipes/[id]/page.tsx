@@ -43,7 +43,7 @@ export default async function RecipeDetail({
   }
 
   return (
-    <div className="max-w-[1536px] mx-auto  bg-[#F5F0CD] h-full w-full ">
+    <div className="max-w-[1536px] mx-auto  bg-[#fcf0f0] h-full w-full ">
       <div className="py-9 w-full px-2 sm:px-8 md:px-12 ">
         <h1
           className={`${styleScript.className}  text-[40px] font-extrabold text-center text-[#fa4147]`}
@@ -51,7 +51,7 @@ export default async function RecipeDetail({
           {recipe.name} Recipe
         </h1>
 
-        <div className="w-[100%] bg-slate-100 shadow-lg h-auto mt-5 flex lg:flex-row  flex-col ">
+        <div className="w-[100%] bg-[#fff6f6]  shadow-lg h-auto mt-5 flex lg:flex-row  flex-col ">
           <div className="w-full lg:w-[50%] flex justify-end items-center h-auto">
             {" "}
             <Image

@@ -21,10 +21,10 @@ async function fetchRecipes(): Promise<Recipe[]> {
 
 export default async function Home() {
   const recipes = await fetchRecipes();
-
+//bg-[#F5F0CD]
 
   return (
-    <main className="max-w-[1536px] mx-auto w-full bg-[#F5F0CD]  pb-10">
+    <main className="max-w-[1536px] mx-auto w-full bg-[#fcf0f0]  pb-10">
       <div className="relative text-center h-[536px] w-full grid place-items-center">
         <Image
           src={"/heroSection.png"}
@@ -85,7 +85,7 @@ export default async function Home() {
   {recipes.map((recipe) => (
     <div
       key={recipe.id}
-      className="h-auto w-full grid gap-1 rounded-lg  bg-[#faf6d6]  shadow-lg border-[1px] border-gray-300"
+      className="h-auto w-full grid gap-1 rounded-lg  bg-[#fff6f6]  shadow-lg border-[1px] border-gray-300"
     >
       <div className="w-full h-[300px] sm:h-[200px]" >
       <Image
