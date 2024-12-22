@@ -1,132 +1,116 @@
-'use client';
-import { useEffect, useState } from 'react';
-import { fetchData } from '../../../../fetchdata';
-import { Recipe } from '../../../../types';
-import Image from 'next/image'; 
+import Image from "next/image";
+import { Style_Script } from "next/font/google";
+import Comments from "@/app/components/comments";
 
-export default function RecipeDetail({ params }: { params: { id: string } }) {
-  const [recipe, setRecipe] = useState<Recipe | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [comments, setComments] = useState<string[]>([]);
-  const [newComment, setNewComment] = useState<string>('');
+const styleScript = Style_Script({
+  subsets: ["latin"],
+  weight: "400",
+});
 
-  // Load recipe data
-  useEffect(() => {
-    async function getRecipe() {
-      try {
-        const data = await fetchData<Recipe>(`https://dummyjson.com/recipes/${params.id}`);
-        setRecipe(data);
-      }catch (err) {
-        console.error('Error loading recipe:', err); 
-        setError('Failed to load recipe');
-      } finally {
-        setLoading(false);
-      }
+// Fetch recipe data
+async function fetchRecipe(id: string) {
+  try {
+    const res = await fetch(`https://dummyjson.com/recipes/${id}`, {
+      next: { revalidate: 30 }, // Cache for 60 seconds
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch recipe");
     }
-    getRecipe();
-  }, [params.id]);
+    return res.json();
+  } catch (error) {
+    console.error("Error fetching recipe:", error);
+    return null;
+  }
+}
 
-  // Load comments from local storage
-  useEffect(() => {
-    const savedComments = localStorage.getItem(`comments-${params.id}`);
-    if (savedComments) {
-      setComments(JSON.parse(savedComments));
-    }
-  }, [params.id]);
+// Server Component for Recipe Detail
+export default async function RecipeDetail({
+  params,
+}: {
+  params: { id: string };
+}) {
+  const recipe = await fetchRecipe(params.id);
 
-  // Handle comment submission
-  const handleCommentSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (newComment.trim()) {
-      const updatedComments = [...comments, newComment];
-      setComments(updatedComments);
-      setNewComment(''); // Clear the input
-      localStorage.setItem(`comments-${params.id}`, JSON.stringify(updatedComments));
-    }
-  };
+  console.log(recipe);
 
-  // Handle comment deletion
-  const handleCommentDelete = (index: number) => {
-    const updatedComments = comments.filter((_, i) => i !== index);
-    setComments(updatedComments);
-    localStorage.setItem(`comments-${params.id}`, JSON.stringify(updatedComments));
-  };
-
-  if (loading) return <p className="text-center">Loading...</p>;
-  if (error) return <p className="text-red-500 text-center">{error}</p>;
-  if (!recipe) return <p className="text-center">Recipe not found.</p>;
+  if (!recipe) {
+    return (
+      <div className="text-center mt-6">
+        <p className="text-red-500 text-lg">Recipe not found.</p>
+      </div>
+    );
+  }
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg mt-6">
-      <h1 className="text-4xl font-bold mb-4 text-gray-800 text-center">{recipe.name}</h1>
-      
-      <Image 
-        src={recipe.image} 
-        alt={recipe.name} 
-        width={500} 
-        height={300} 
-        className="w-full h-auto rounded-lg mb-6" 
-      />
+    <div className="max-w-[1536px] mx-auto  bg-[#F5F0CD] h-full w-full ">
+      <div className="py-9 w-full px-2 sm:px-8 md:px-12 ">
+        <h1
+          className={`${styleScript.className}  text-[40px] font-extrabold text-center text-[#fa4147]`}
+        >
+          {recipe.name} Recipe
+        </h1>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div>
-          <h2 className="text-2xl font-semibold text-gray-700 mb-2">Ingredients</h2>
-          <ul className="list-disc pl-5 space-y-1 text-gray-600">
-            {recipe.ingredients.map((ingredient, index) => (
-              <li key={index}>{ingredient}</li>
-            ))}
-          </ul>
-        </div>
-
-        <div>
-          <h2 className="text-2xl font-semibold text-gray-700 mb-2">Instructions</h2>
-          <ol className="list-decimal pl-5 space-y-1 text-gray-600">
-            {recipe.instructions.map((instruction, index) => (
-              <li key={index}>{instruction}</li>
-            ))}
-          </ol>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-gray-600 mb-4">
-        <p><span className="font-semibold">Prep Time:</span> {recipe.prepTimeMinutes} minutes</p>
-        <p><span className="font-semibold">Cook Time:</span> {recipe.cookTimeMinutes} minutes</p>
-        <p><span className="font-semibold">Servings:</span> {recipe.servings}</p>
-        <p><span className="font-semibold">Difficulty:</span> {recipe.difficulty}</p>
-        <p><span className="font-semibold">Calories per Serving:</span> {recipe.caloriesPerServing}</p>
-      </div>
-
-      {/* Comment Section */}
-      <div className="mt-8">
-        <h2 className="text-2xl font-semibold text-gray-700 mb-4">Comments</h2>
-        <form onSubmit={handleCommentSubmit} className="mb-4">
-          <textarea
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            placeholder="Add a comment..."
-            className="w-full p-2 border border-gray-300 rounded-md"
-            rows={4}
-          />
-          <button type="submit" className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-md">
-            Submit
-          </button>
-        </form>
-
-        <div className="space-y-2">
-          {comments.map((comment, index) => (
-            <div key={index} className="flex justify-between items-center p-2 border border-gray-200 rounded-md">
-              <span>{comment}</span>
-              <button 
-                onClick={() => handleCommentDelete(index)} 
-                className="ml-4 text-red-500 hover:text-red-700"
-              >
-                Delete
-              </button>
+        <div className="w-[100%] bg-slate-100 shadow-lg h-auto mt-5 flex lg:flex-row  flex-col ">
+          <div className="w-full lg:w-[50%] flex justify-end items-center h-auto">
+            {" "}
+            <Image
+              src={recipe.image}
+              alt={recipe.name}
+              height={400}
+              width={400}
+              className="sm:h-[400px] h-[250px] lg:min-h-[480px] lg:h-full w-full"
+            />{" "}
+          </div>
+          <div className=" w-full lg:w-[50%] p-8 h-auto flex flex-col ">
+            <div className="w-[100%]  flex md:flex-row flex-col"> 
+            <div className="md:w-[50%]  w-full h-auto p-2  md:border-r  md:border-r-gray-300">
+              <h1 className="text-center font-bold pt-1">Instructions</h1>
+              <ul className="list-decimal sm:pl-5 space-y-1 pb-2 text-gray-600 pt-3">
+                {recipe.instructions.map(
+                  (instruction: string, index: number) => (
+                    <li key={index}>{instruction}</li>
+                  )
+                )}
+              </ul>
             </div>
-          ))}
-        </div>
+            <div className="md:w-[50%] w-full  h-auto p-2">
+              <h1 className="text-center  font-bold pt-1">Ingredients</h1>
+              <ul className="list-disc sm:pl-5 space-y-1 text-gray-600 pt-3">
+                {recipe.ingredients.map((ingredient: string, index: number) => (
+                  <li key={index}>{ingredient}</li>
+                ))}
+              </ul>
+            </div>
+            </div>
+
+
+            <div className="grid  grid-cols-2 md:grid-cols-3 gap-1 md:gap-2 text-gray-600 pt-3 border-t border-t-gray-500">
+        <p>
+          <span className="font-semibold ">Prep Time:</span> {recipe.prepTimeMinutes} minutes
+        </p>
+        <p>
+          <span className="font-semibold">Cook Time:</span> {recipe.cookTimeMinutes} minutes
+        </p>
+        <p>
+          <span className="font-semibold"> Servings:</span> {recipe.servings}
+        </p>
+        <p>
+          <span className="font-semibold">Difficulty:</span> {recipe.difficulty}
+        </p>
+        <p>
+          <span className="font-semibold">Calories Serving:</span> {recipe.caloriesPerServing}
+        </p>
       </div>
-    </div>
+
+
+          </div>
+
+
+        </div>
+        {/* blogId={recipe.id} */}
+        <Comments  blogId={recipe.id} />
+      </div>
+</div>
   );
 }
